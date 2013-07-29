@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context-3.2.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+    <context:component-scan base-package="com.nickgroenke" />
+
+    <context:property-placeholder location="application.properties"/>
+
+    <bean id="capsService"
+          class="com.nickgroenke.CapsService" />
+
+
+    <!-- Build Cache from Spec -->
+
+    <bean id="cacheBuilderSpec"
+          class="com.google.common.cache.CacheBuilderSpec"
+          factory-method="parse"
+          c:cacheBuilderSpecification="${cacheSpecification}" />
+
+    <bean id="cacheBuilderFromSpec"
+          class="com.google.common.cache.CacheBuilder"
+          factory-method="from"
+          c:spec-ref="cacheBuilderSpec" />
+
+    <bean id="cacheFromSpec"
+          factory-bean="cacheBuilderFromSpec"
+          factory-method="build" />
+
+    <bean id="demoCallerWithCacheFromSpec"
+          class="com.nickgroenke.DemoCallerWithCache"
+          c:cache-ref="cacheFromSpec"
+          c:capsService-ref="capsService" />
+
+
+    <!-- Build Cache with a custom FactoryBean -->
+
+    <bean id="cacheFromFactoryBean"
+          class="com.nickgroenke.GuavaCacheFactoryBean"
+          p:expireMillisecondsAfterWrite="${expireMillisecondsAfterWrite}"
+          p:maximumSize="${maximumSize}" />
+
+    <bean id="demoCallerWithCacheFromFactoryBean"
+          class="com.nickgroenke.DemoCallerWithCache"
+          c:cache-ref="cacheFromFactoryBean"
+          c:capsService-ref="capsService" />
+
+
+    <!-- Build Cache with Spring Expression Language (SpEL) -->
+
+    <bean id="demoCallerSpEL"
+          class="com.nickgroenke.DemoCallerWithCache"
+          c:cache="#{T(com.google.common.cache.CacheBuilder)
+                         .newBuilder()
+                         .maximumSize(100)
+                         .expireAfterWrite(10,T(java.util.concurrent.TimeUnit).SECONDS)
+                         .build()}"
+          c:capsService-ref="capsService" />
+
+
+
+</beans>
