@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
  *
  * I had some trouble coming up with a good demo use case. This is pretty contrived!
  *
- * @author groenken
+ * @author nickgroenke
  */
 public class DemoCallerWithCache {
 
